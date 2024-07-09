@@ -21,7 +21,7 @@ include-in-header:
   - text: |
       <style>
       #title-slide .title {
-        font-size: 2em;
+        font-size: 1.5em;
       }
       </style>
 ---
@@ -52,7 +52,7 @@ include-in-header:
 ```{julia}
 using InferOptBenchmarks.Warcraft
 
-b = WarcraftBenchmark()
+b = WarcraftBenchmark();
 ```
 
 ## Retrieving the dataset
@@ -60,8 +60,11 @@ b = WarcraftBenchmark()
 dataset = generate_dataset(b, 100);
 train_dataset, test_dataset = dataset[1:80], dataset[81:100];
 
-x, θ, y = train_dataset[1]
-plot_data(x, θ, y)
+x, y, θ = train_dataset[1];
+```
+
+```{julia}
+plot_data(x, y, θ)
 ```
 
 ## CNN
@@ -97,7 +100,7 @@ end
 
 ## Prediction
 ```{julia}
-(x, y_true, θ_true) = test_dataset[1]; θ = model(x); y = UInt8.(maximizer(θ));
+(x, y_true, θ_true) = test_dataset[13]; θ = model(x); y = UInt8.(maximizer(θ));
 plot_data(x, y_true, θ_true)
 ```
 ```{julia}

@@ -866,7 +866,7 @@ version = "0.6.1"
 
 [[deps.InferOptBenchmarks]]
 deps = ["DataDeps", "Distributions", "DocStringExtensions", "Flux", "Graphs", "HiGHS", "Images", "InferOpt", "Ipopt", "JuMP", "LinearAlgebra", "Metalhead", "NPZ", "Plots", "Random", "SimpleWeightedGraphs", "SparseArrays"]
-git-tree-sha1 = "2b0e8082ac21679f00c7f4bfb79d9a1ada0d047d"
+git-tree-sha1 = "c28fbc9fff043e98064bfd758f29225cb7110ed2"
 repo-rev = "decision-focused-learning"
 repo-url = "https://github.com/JuliaDecisionFocusedLearning/InferOptBenchmarks.jl"
 uuid = "2fbe496a-299b-4c81-bab5-c44dfc55cf20"
