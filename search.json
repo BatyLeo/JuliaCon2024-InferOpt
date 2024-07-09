@@ -32,7 +32,7 @@
     "href": "main.html#retrieving-the-dataset",
     "title": "InferOpt.jl: Combinatorial Optimization enhanced Machine Learning",
     "section": "Retrieving the dataset",
-    "text": "Retrieving the dataset\n\ndataset = generate_dataset(b, 100);\ntrain_dataset, test_dataset = dataset[1:80], dataset[81:100];\n\nx, θ, y = train_dataset[1]\nplot_data(x, θ, y)"
+    "text": "Retrieving the dataset\n\ndataset = generate_dataset(b, 100);\ntrain_dataset, test_dataset = dataset[1:80], dataset[81:100];\n\nx, θ, y = train_dataset[1]\nplot_data(x, θ, y)\n\n┌ Warning: Checksum not provided, add to the Datadep Registration the following hash line\n│   hash = \"67fa5e32ac6e567ee41b891309a776e6b57c09a7b6b37a368ac12b5a64a781fb\"\n└ @ DataDeps ~/.julia/packages/DataDeps/Y2lje/src/verification.jl:44\n\n7-Zip (a) [64] 17.04 : Copyright (c) 1999-2021 Igor Pavlov : 2017-08-28\np7zip Version 17.04 (locale=C.UTF-8,Utf16=on,HugeFiles=on,64 bits,2 CPUs AMD EPYC 7763 64-Core Processor                 (A00F11),ASM,AES-NI)\n\nScanning the drive for archives:\n1 file, 77643058 bytes (75 MiB)\n\nExtracting archive: /home/runner/.julia/scratchspaces/124859b0-ceae-595e-8997-d05f6a7a8dfe/datadeps/warcraft/data.zip\n--\nPath = /home/runner/.julia/scratchspaces/124859b0-ceae-595e-8997-d05f6a7a8dfe/datadeps/warcraft/data.zip\nType = zip\nPhysical Size = 77643058\n\nEverything is Ok\n\nFolders: 3\nFiles: 15\nSize:       336974348\nCompressed: 77643058"
   },
   {
     "objectID": "main.html#cnn",
