@@ -57,17 +57,13 @@ b = WarcraftBenchmark();
 
 ## Retrieving the dataset
 ```{julia}
-#| echo: false
-redirect_stdout(devnull)
-```
-```{julia}
 dataset = generate_dataset(b, 100);
 train_dataset, test_dataset = dataset[1:80], dataset[81:100];
-
-x, y, θ = train_dataset[1];
 ```
 
+## AA
 ```{julia}
+x, y, θ = train_dataset[1];
 plot_data(x, y, θ)
 ```
 

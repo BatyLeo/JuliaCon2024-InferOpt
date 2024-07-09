@@ -37,6 +37,8 @@ jobs:
       
       - run: julia --project -e 'using Pkg; Pkg.instantiate()'
 
+      - run: julia --project -e 'using InferOptBenchmarks.Warcraft; generate_dataset(WarcraftBenchmark(), 1);'
+
       # See more at https://github.com/quarto-dev/quarto-actions/blob/main/examples/example-03-dependencies.md
 
       # To publish to Netlify, RStudio Connect, or GitHub Pages, uncomment
