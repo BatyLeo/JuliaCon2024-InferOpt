@@ -1,0 +1,72 @@
+[
+  {
+    "objectID": "main.html#about-me",
+    "href": "main.html#about-me",
+    "title": "InferOpt.jl: Combinatorial Optimization enhanced Machine Learning",
+    "section": "About me",
+    "text": "About me\n\n3rd year PhD student at Ecole des Ponts in Paris\nOptimization and Machine Learning\nWebsite: https://batyleo.github.io/"
+  },
+  {
+    "objectID": "main.html#juliadecisionfocusedlearning",
+    "href": "main.html#juliadecisionfocusedlearning",
+    "title": "InferOpt.jl: Combinatorial Optimization enhanced Machine Learning",
+    "section": "JuliaDecisionFocusedLearning",
+    "text": "JuliaDecisionFocusedLearning\n\n\n\nNew GitHub organization\n\n\n\nNew GitHub organization"
+  },
+  {
+    "objectID": "main.html#example-problem",
+    "href": "main.html#example-problem",
+    "title": "InferOpt.jl: Combinatorial Optimization enhanced Machine Learning",
+    "section": "Example problem:",
+    "text": "Example problem:\nPath-finding based on images"
+  },
+  {
+    "objectID": "main.html#the-code",
+    "href": "main.html#the-code",
+    "title": "InferOpt.jl: Combinatorial Optimization enhanced Machine Learning",
+    "section": "The code",
+    "text": "The code\n\nusing InferOptBenchmarks.Warcraft\n\nb = WarcraftBenchmark()\n\nWarcraftBenchmark()"
+  },
+  {
+    "objectID": "main.html#retrieving-the-dataset",
+    "href": "main.html#retrieving-the-dataset",
+    "title": "InferOpt.jl: Combinatorial Optimization enhanced Machine Learning",
+    "section": "Retrieving the dataset",
+    "text": "Retrieving the dataset\n\ndataset = generate_dataset(b, 100);\ntrain_dataset, test_dataset = dataset[1:80], dataset[81:100];\n\nx, θ, y = train_dataset[1]\nplot_data(x, θ, y)"
+  },
+  {
+    "objectID": "main.html#cnn",
+    "href": "main.html#cnn",
+    "title": "InferOpt.jl: Combinatorial Optimization enhanced Machine Learning",
+    "section": "CNN",
+    "text": "CNN\n\nmodel = generate_statistical_model(b)\n\nChain(\n  Conv((7, 7), 3 =&gt; 64, pad=3, stride=2, bias=false),  # 9_408 parameters\n  BatchNorm(64, relu),                  # 128 parameters, plus 128\n  MaxPool((3, 3), pad=1, stride=2),\n  Parallel(\n    addact(NNlib.relu, ...),\n    identity,\n    Chain(\n      Conv((3, 3), 64 =&gt; 64, pad=1, bias=false),  # 36_864 parameters\n      BatchNorm(64),                    # 128 parameters, plus 128\n      NNlib.relu,\n      Conv((3, 3), 64 =&gt; 64, pad=1, bias=false),  # 36_864 parameters\n      BatchNorm(64),                    # 128 parameters, plus 128\n    ),\n  ),\n  AdaptiveMaxPool((12, 12)),\n  InferOptBenchmarks.Warcraft.average_tensor,\n  InferOptBenchmarks.Warcraft.neg_tensor,\n  InferOptBenchmarks.Warcraft.squeeze_last_dims,\n)         # Total: 9 trainable arrays, 83_520 parameters,\n          # plus 6 non-trainable, 384 parameters, summarysize 330.312 KiB."
+  },
+  {
+    "objectID": "main.html#combinatorial-optimimzation-algorithm",
+    "href": "main.html#combinatorial-optimimzation-algorithm",
+    "title": "InferOpt.jl: Combinatorial Optimization enhanced Machine Learning",
+    "section": "Combinatorial Optimimzation algorithm",
+    "text": "Combinatorial Optimimzation algorithm\n\nmaximizer = generate_maximizer(b)\n\ndijkstra_maximizer (generic function with 1 method)"
+  },
+  {
+    "objectID": "main.html#layer-and-loss",
+    "href": "main.html#layer-and-loss",
+    "title": "InferOpt.jl: Combinatorial Optimization enhanced Machine Learning",
+    "section": "Layer and loss",
+    "text": "Layer and loss\n\nusing InferOpt\n\nperturbed_maximizer = PerturbedMultiplicative(maximizer; ε=0.1, nb_samples=10)\nloss = FenchelYoungLoss(perturbed_maximizer)\n\nFenchelYoungLoss(PerturbedMultiplicative(dijkstra_maximizer, 0.1, 10, Random.MersenneTwister, nothing, Normal(0, 1)))"
+  },
+  {
+    "objectID": "main.html#training",
+    "href": "main.html#training",
+    "title": "InferOpt.jl: Combinatorial Optimization enhanced Machine Learning",
+    "section": "Training",
+    "text": "Training\n\nusing Flux\n\nopt_state = Flux.setup(Adam(1e-3), model)\nfor epoch in 1:50\n    val, grads = Flux.withgradient(model) do m\n        sum(loss(m(x), y) for (x, y, _) in train_dataset)\n    end\n    Flux.update!(opt_state, model, grads[1])\nend"
+  },
+  {
+    "objectID": "main.html#prediction",
+    "href": "main.html#prediction",
+    "title": "InferOpt.jl: Combinatorial Optimization enhanced Machine Learning",
+    "section": "Prediction",
+    "text": "Prediction\n\n(x, y_true, θ_true) = test_dataset[1]; θ = model(x); y = UInt8.(maximizer(θ));\nplot_data(x, y_true, θ_true)\n\n\n\n\n  \n    \n  \n\n\n\n  \n    \n  \n\n\n\n  \n    \n  \n\n\n\n\n\n\n  \n    \n  \n\n\n\n\n\n\n  \n    \n  \n\n\n\n\n\n\n\n\nplot_data(x, y, θ; θ_true)"
+  }
+]
