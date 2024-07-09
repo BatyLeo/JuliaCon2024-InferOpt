@@ -1,0 +1,6 @@
+.vscode
+
+/.quarto/
+main.html
+_site/
+main_files

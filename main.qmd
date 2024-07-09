@@ -10,6 +10,8 @@ bibliography: biblio.bib
 engine: julia
 format:
   revealjs:
+    width: 1280
+    height: 720
     slide-number: true
     overview: true
     code-line-numbers: false
@@ -46,8 +48,58 @@ include-in-header:
 ## Example problem:
 ### Path-finding based on images
 
-# The code
+## The code
+```{julia}
+using InferOptBenchmarks.Warcraft
+
+b = WarcraftBenchmark()
+```
+
+## Retrieving the dataset
+```{julia}
+dataset = generate_dataset(b, 100);
+train_dataset, test_dataset = dataset[1:80], dataset[81:100];
+
+x, θ, y = train_dataset[1]
+plot_data(x, θ, y)
+```
+
+## CNN
+```{julia}
+model = generate_statistical_model(b)
+```
+
+## Combinatorial Optimimzation algorithm
+```{julia}
+maximizer = generate_maximizer(b)
+```
+
+## Layer and loss
 ```{julia}
 using InferOpt
-FenchelYoungLoss
+
+perturbed_maximizer = PerturbedMultiplicative(maximizer; ε=0.1, nb_samples=10)
+loss = FenchelYoungLoss(perturbed_maximizer)
+```
+
+## Training
+```{julia}
+using Flux
+
+opt_state = Flux.setup(Adam(1e-3), model)
+for epoch in 1:50
+    val, grads = Flux.withgradient(model) do m
+        sum(loss(m(x), y) for (x, y, _) in train_dataset)
+    end
+    Flux.update!(opt_state, model, grads[1])
+end
+```
+
+## Prediction
+```{julia}
+(x, y_true, θ_true) = test_dataset[1]; θ = model(x); y = UInt8.(maximizer(θ));
+plot_data(x, y_true, θ_true)
+```
+```{julia}
+plot_data(x, y, θ; θ_true)
 ```

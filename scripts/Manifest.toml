@@ -2,7 +2,7 @@
 
 julia_version = "1.10.4"
 manifest_format = "2.0"
-project_hash = "2f0f63ad238b8e1343b81f54b60798c04633e94d"
+project_hash = "b69a5533c6ce9bd45994777e7028f5f58889565c"
 
 [[deps.ASL_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -866,7 +866,7 @@ version = "0.6.1"
 
 [[deps.InferOptBenchmarks]]
 deps = ["DataDeps", "Distributions", "DocStringExtensions", "Flux", "Graphs", "HiGHS", "Images", "InferOpt", "Ipopt", "JuMP", "LinearAlgebra", "Metalhead", "NPZ", "Plots", "Random", "SimpleWeightedGraphs", "SparseArrays"]
-git-tree-sha1 = "2b0e8082ac21679f00c7f4bfb79d9a1ada0d047d"
+git-tree-sha1 = "708d9a0bd55e12b7a06139907d767360f2402e21"
 repo-rev = "decision-focused-learning"
 repo-url = "https://github.com/JuliaDecisionFocusedLearning/InferOptBenchmarks.jl"
 uuid = "2fbe496a-299b-4c81-bab5-c44dfc55cf20"
