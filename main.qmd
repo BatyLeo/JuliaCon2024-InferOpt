@@ -4,105 +4,176 @@ author:
   - name: Léo Baty
     email: leo.baty@enpc.fr
     affiliation: 
-      - name: École des Ponts, CERMICS lab
+      - name: École des Ponts, CERMICS
 date: "2024-07-12"
-bibliography: biblio.bib
 engine: julia
 format:
   revealjs:
-    width: 1280
-    height: 720
     slide-number: true
     overview: true
     code-line-numbers: false
+    scrollable: true
+    theme: [default, custom.scss]
 execute:
     echo: true
-include-in-header:
-  - text: |
-      <style>
-      #title-slide .title {
-        font-size: 1.5em;
-      }
-      </style>
+    freeze: auto
+    error: true
 ---
 
-## About me
+## InferOpt.jl
+- State-of-the-art tools to incorporate combinatorial optimization algorithms in machine learning pipelines
+- Compatible with ML and AD ChainRules Julia ecosystem
+- Part of the new JuliaDecisionFocusedLearning GitHub organization
+![Alt text](./images/JLDFL.png){height="15%"}
 
-- 3rd year PhD student at Ecole des Ponts in Paris
-- Optimization and Machine Learning
-- Website: <https://batyleo.github.io/>
+## Path finding on Warcraft maps
+- **Input**: map image
+- **Goal**: find the shortest path from top left to bottom right
+- True cell costs are **unknown**
 
-## JuliaDecisionFocusedLearning
+![](./images/warcraft_pipeline.png){height="240" fig-align="center"}
+
+How to train a neural network to predict good costs?
+
+## Retrieving the dataset
+```{julia}
+using InferOptBenchmarks.Warcraft
+b = WarcraftBenchmark();
+```
+
+Download and format the data:
+```{julia}
+dataset = generate_dataset(b, 50)
+train_dataset, test_dataset = dataset[1:45], dataset[46:50]
+x, y_true, θ_true = test_dataset[1]
+plot_data(x, y_true, θ_true)
+```
+
+## The neural network
 :::: {.columns}
 
-::: {.column width=70%}
-- New GitHub organization
+::: {.column width="50%"}
+First three layers of a resnet
+```{julia}
+model = generate_statistical_model(b)
+```
 :::
 
-::: {.column width="30%"}
-- New GitHub organization
+::: {.column width="50%"}
+Predicted costs
+```{julia}
+θ = model(x)
+```
 :::
 
 ::::
 
-## Example problem:
-### Path-finding based on images
-
-## The code
-```{julia}
-using InferOptBenchmarks.Warcraft
-
-b = WarcraftBenchmark();
-```
-
-## Retrieving the dataset
-```{julia}
-dataset = generate_dataset(b, 100);
-train_dataset, test_dataset = dataset[1:80], dataset[81:100];
-```
-
-## AA
-```{julia}
-x, y, θ = train_dataset[1];
-plot_data(x, y, θ)
-```
-
-## CNN
-```{julia}
-model = generate_statistical_model(b)
-```
-
-## Combinatorial Optimimzation algorithm
+## Combinatorial algorithm
+We use the Dijkstra algorithm, wrapped from Graphs.jl
 ```{julia}
 maximizer = generate_maximizer(b)
 ```
+:::: {.columns}
 
-## Layer and loss
+::: {.column width="50%"}
+Output of untrained pipeline
+```{julia}
+maximizer(θ)
+```
+:::
+
+::: {.column width="50%"}
+Path we want to output
+```{julia}
+maximizer(-θ_true)
+```
+:::
+
+::::
+
+## Computing derivatives (Zygote)
+Either fails...
+```{julia}
+using Zygote
+
+Zygote.jacobian(maximizer, θ)
+```
+
+## Computing derivatives (ForwardDiff)
+... or is zero almost everywhere
+
+:::: {.columns}
+
+::: {.column width="75%"}
+```{julia}
+using ForwardDiff
+
+g = ForwardDiff.jacobian(maximizer, θ)
+```
+:::
+
+::: {.column width="25%"}
+```{julia}
+any(g .!= 0.0)
+```
+:::
+
+::::
+
+## Regularizing the maximizer
+
 ```{julia}
 using InferOpt
 
-perturbed_maximizer = PerturbedMultiplicative(maximizer; ε=0.1, nb_samples=10)
+perturbed_maximizer = PerturbedMultiplicative(maximizer; ε=0.2, nb_samples=100)
+perturbed_maximizer(-θ_true)
+```
+
+## It is now differentiable!
+Thanks to custom backward rules
+```{julia}
+Zygote.jacobian(perturbed_maximizer, θ)[1]
+```
+
+## Allows defining a differentiable loss
+For supervised learning:
+```{julia}
 loss = FenchelYoungLoss(perturbed_maximizer)
+loss(θ, y_true)
+```
+
+Gradients are defined:
+```{julia}
+Zygote.gradient(t -> loss(t, y_true), θ)[1]
 ```
 
 ## Training
+Usual Flux training loop
 ```{julia}
-using Flux
+using Flux, Plots
 
 opt_state = Flux.setup(Adam(1e-3), model)
+loss_history = Float64[]
 for epoch in 1:50
     val, grads = Flux.withgradient(model) do m
-        sum(loss(m(x), y) for (x, y, _) in train_dataset)
+        sum(loss(m(x), y) for (x, y, _) in train_dataset) / length(train_dataset)
     end
     Flux.update!(opt_state, model, grads[1])
+    push!(loss_history, val)
 end
+plot(loss_history)
 ```
 
 ## Prediction
+Predicted costs and path
 ```{julia}
-(x, y_true, θ_true) = test_dataset[13]; θ = model(x); y = UInt8.(maximizer(θ));
-plot_data(x, y_true, θ_true)
-```
-```{julia}
+(x, y_true, θ_true) = test_dataset[1]
+θ = model(x)
+y = UInt8.(maximizer(θ))
 plot_data(x, y, θ; θ_true)
 ```
+
+## Thank you!
+- Slides: [https://batyleo.github.io/JuliaCon2024-InferOpt/](https://batyleo.github.io/JuliaCon2024-InferOpt/)
+- Preprint paper for maths internals: [https://arxiv.org/abs/2207.13513](https://arxiv.org/abs/2207.13513)
+- GitHub repo: [https://github.com/JuliaDecisionFocusedLearning/InferOpt.jl](https://github.com/JuliaDecisionFocusedLearning/InferOpt.jl)

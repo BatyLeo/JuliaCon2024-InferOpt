@@ -4,3 +4,6 @@
 main.html
 _site/
 main_files
+
+.DS_Store
+_freeze
