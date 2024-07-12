@@ -1,5 +1,5 @@
 ---
-title: "InferOpt.jl:<br> Combinatorial Optimization enhanced Machine Learning"
+title: "InferOpt.jl:<br> Combinatorial Optimization-enhanced Machine Learning"
 author:
   - name: Léo Baty
     email: leo.baty@enpc.fr
@@ -26,6 +26,15 @@ execute:
 - Part of the new JuliaDecisionFocusedLearning GitHub organization
 ![Alt text](./images/JLDFL.png){height="15%"}
 
+## Why?
+- Increase the expressivity of machine learning models, by having combinatorial outputs
+- Leverage algorithms for "easy" problems to solve harder ones
+
+**Difficulty**: combinatorial algorithms are piecewise constant functions
+$\implies$ no informative gradients
+
+- InferOpt provides differentiable layers and loss functions to overcome this issue.
+
 ## Path finding on Warcraft maps
 - **Input**: map image
 - **Goal**: find the shortest path from top left to bottom right
@@ -33,7 +42,7 @@ execute:
 
 ![](./images/warcraft_pipeline.png){height="240" fig-align="center"}
 
-How to train a neural network to predict good costs?
+**Dataset**: Set of (image, path) pairs to imitate
 
 ## Retrieving the dataset
 ```{julia}
@@ -62,7 +71,12 @@ model = generate_statistical_model(b)
 ::: {.column width="50%"}
 Predicted costs
 ```{julia}
+using Plots
 θ = model(x)
+
+kw = (; framestyle=:none, yflip=true, aspect_ratio=:equal, legend=false, size=(300, 300))
+clim=(minimum(θ_true), maximum(θ_true))
+heatmap(-θ; kw..., clim)
 ```
 :::
 
@@ -78,14 +92,14 @@ maximizer = generate_maximizer(b)
 ::: {.column width="50%"}
 Output of untrained pipeline
 ```{julia}
-maximizer(θ)
+heatmap(maximizer(θ); kw...)
 ```
 :::
 
 ::: {.column width="50%"}
 Path we want to output
 ```{julia}
-maximizer(-θ_true)
+heatmap(maximizer(-θ_true); kw...)
 ```
 :::
 
@@ -102,23 +116,15 @@ Zygote.jacobian(maximizer, θ)
 ## Computing derivatives (ForwardDiff)
 ... or is zero almost everywhere
 
-:::: {.columns}
-
-::: {.column width="75%"}
 ```{julia}
 using ForwardDiff
 
 g = ForwardDiff.jacobian(maximizer, θ)
+heatmap(g; kw...)
 ```
-:::
-
-::: {.column width="25%"}
 ```{julia}
 any(g .!= 0.0)
 ```
-:::
-
-::::
 
 ## Regularizing the maximizer
 
@@ -126,7 +132,11 @@ any(g .!= 0.0)
 using InferOpt
 
 perturbed_maximizer = PerturbedMultiplicative(maximizer; ε=0.2, nb_samples=100)
-perturbed_maximizer(-θ_true)
+yp = perturbed_maximizer(-θ_true)
+```
+
+```{julia}
+heatmap(yp; kw..., legend=true)
 ```
 
 ## It is now differentiable!
@@ -144,13 +154,13 @@ loss(θ, y_true)
 
 Gradients are defined:
 ```{julia}
-Zygote.gradient(t -> loss(t, y_true), θ)[1]
+heatmap(Zygote.gradient(t -> loss(t, y_true), θ)[1]; kw..., legend=true)
 ```
 
 ## Training
 Usual Flux training loop
 ```{julia}
-using Flux, Plots
+using Flux
 
 opt_state = Flux.setup(Adam(1e-3), model)
 loss_history = Float64[]
